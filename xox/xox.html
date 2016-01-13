@@ -1,0 +1,215 @@
+<head>
+    <title>Tic Tac Toe!</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+</head>
+
+<body>
+	<header>
+        {{> header}}
+        {{> welcome}}
+	</header>
+    
+    <div class="container">
+        {{#if currentUser}}
+        <section class="content">
+            {{> playground}}
+        </section>
+
+        {{else}}
+        <section>
+            <p class="alert alert-danger">
+                <strong>Sign-in</strong> to <strong>play!</strong>
+            </p>
+        </section>
+        {{/if}}
+    </div>
+</body>
+
+<template name="header">
+    <div class="logo">
+        <h2><a href="http://tictacmemetburak.meteor.com/">Tic Tac Toe</a></h2>
+    </div>
+    
+    <div class="navbar">
+        <div class="menu">
+            <button type="button" class="btn btn-sm btn-default leaderboard">
+                <span class="glyphicon glyphicon-king" aria-hidden="true"></span>
+            </button>
+            {{#if currentUser}}
+            <button type="button" class="btn btn-sm btn-default join-game">
+                <span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-sm btn-default create-game">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+            {{/if}}
+        </div>
+        
+        <span class="glyphicon glyphicon-user" style="vertical-align: middle;"></span>&nbsp;{{> loginButtons}}
+    </div>
+</template>
+
+<template name="welcome">
+    <p style="margin-left: 1%">Welcome, <strong>{{uname}}</strong></p>
+    <hr/>
+</template>
+
+<template name="playground">
+    {{#if isPlayGame}}
+        {{> playGame}}
+    {{else}}
+    <p class="alert alert-info">
+        <strong>Create</strong> a new game or <strong>join</strong> one!
+    </p>
+    {{/if}} 
+    
+    {{#if isCreateGame}}
+        {{> createGame}}
+    {{/if}}
+    {{#if isJoinGame}}
+        {{> joinGame}}
+    {{/if}}
+    {{#if isShowLeaderboard}}
+        {{> leaderboard}}
+    {{/if}}
+   
+</template>
+
+<template name="playGame">
+    <div class="alert alert-info">
+        <h4>Game: {{currentGame.gameName}}</h4>
+        <p>X: {{currentGame.player1}}</p>
+        <p>O: {{currentGame.player2}}</p>
+    </div>
+
+    {{#if currentGame.isPlayer2NotConnected}} 
+        <div class="alert alert-info">
+            <strong><h4>Waiting for player 2...</h4></strong>
+        </div>
+    {{else}}
+        {{#if currentGame.finished}}
+            <div class="alert alert-info">
+                <h3><strong>Result: {{currentGame.winner}}!</strong></h3>
+            </div>
+        {{else}}
+            <div class="alert alert-success">
+                <strong><h4>Lets Play!</h4></strong>
+                <h4>Turn: {{currentGame.turns}} 
+                    {{#if isYourTurn}}
+                    <strong>(Your turn!)</strong>
+                    {{else}}
+                    <strong>(Wait!)</strong>
+                    {{/if}}
+                </h4>
+            </div> 
+        {{/if}}
+    
+        <table>
+            <tbody>
+                {{> gameBoard}}
+            </tbody>
+        </table>
+    {{/if}}
+    
+</template>
+
+<template name="createGame">
+    <div class="panel panel-primary">
+        <div class="panel-heading"><h4>Create Game</h4></div>
+        
+        <form>
+        <div class="panel-body">
+           
+                <div class="form-group">
+                    <label>Game Name: </label>
+                    <input type="text" name="gamenameinput" class="form-control" placeholder="XOXO Wizard" />                                          
+                </div>
+            
+        </div>
+        
+        <div class="panel-footer text-center">
+            <input type="submit" value="GO" class="btn btn-primary" />  
+        </div>
+        </form>
+    </div>
+</template>
+
+<template name="joinGame">
+    <div class="panel panel-primary">
+        <div class="panel-heading"><h4>Join Game</h4></div>
+        
+        <div class="panel-body">
+            <ul>
+                {{#each games}}
+                    {{> game}}
+                {{/each}}          
+            </ul>
+        </div>
+        
+        <div class="panel-footer">Total <strong>{{gamesCount}}</strong> games.</div>
+    </div>
+</template>
+
+<template name="game">
+    <li>
+        <span class="gameNameText"><strong>{{gameName}}</strong> - Player 1: {{player1}}, Player 2: {{player2}}</span>
+        
+        {{#if isOwner}}
+        <button class="game-join-button delete">&times;</button>
+        {{/if}}
+        
+        {{#if isFinished}}
+            <div class="alert alert-warning" style='margin-top: 5px; margin-bottom: -12px;'>{{gameName}} match is over. <strong>Result: {{winner}}!</strong></div>
+        {{else}}
+            {{#if isPlayerJoined}}
+            <button class="game-join-button play">></button>
+            {{else}}
+                {{#if isGameNotPlaying}}
+                    <button class="game-join-button join">&plus;</button>
+                {{/if}}
+            {{/if}}
+        {{/if}}
+    </li>
+</template>
+
+<template name="gameBoard">
+    <div class="gameboard">
+      <div class="row" data-row='1'>
+          {{#each cells}}
+            <div class="col" data-col='{{@index}}'>
+                {{> cell}}
+            </div>
+          {{/each}}
+      </div>
+    </div>
+</template>
+
+<template name="cell">
+      	<div class="col movement {{#unless move}}available{{/unless}} {{#if winner}}winner{{/if}}">
+            <span class='move-{{move}}'></span>
+        </div>
+</template>
+
+<template name="omove">
+    <span class="unicode large-circle"></span>
+</template>
+
+<template name="xmove">
+    <span class="unicode multiplication-x"></span>
+</template>
+
+<template name="leaderboard">
+    <div class="panel panel-primary">
+        <div class="panel-heading"><h4>Leaderboard</h4></div>
+        
+        <div class="panel-body">
+            <ul>
+                {{#each scores}}
+                    <li>{{username}} - {{score}}</li>
+                {{/each}}          
+            </ul>
+        </div>
+        
+        <div class="panel-footer">Total <strong>{{userCount}}</strong> played users.</div>
+    </div>
+</template>
